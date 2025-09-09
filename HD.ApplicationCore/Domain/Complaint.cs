@@ -27,7 +27,7 @@ namespace HD.ApplicationCore.Domain
         public State ComplaintState { get; set; }
         public Status ComplaintStatus { get; set; }
         public ComplaintType ComplaintType { get; set; }
-        public string FilePath { get; set; }
+
 
         //La relation OneToMany entre Feature et Complaint
         public virtual int FeatureFK { get; set; }
@@ -52,5 +52,10 @@ namespace HD.ApplicationCore.Domain
 
         //Relation OneToMany entre Message et Complaint 
         public virtual IList<Message> Messages { get; set; }
+
+        //Relation OneToMany entre Message et Complaint 
+        public virtual IList<ComplaintFile> ComplaintFiles { get; set; }
+
+
     }
 }

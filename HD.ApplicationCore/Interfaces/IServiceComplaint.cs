@@ -23,7 +23,7 @@ namespace HD.ApplicationCore.Interfaces
 
 
         //Les services client: 
-        public void CreateComplaint(int clientId, string title, string description, ComplaintType type, string? filePath, int featureId);
+        public void CreateComplaint(int clientId, string title, string description, ComplaintType type, List<string>? filePath, int featureId);
         public Complaint GetComplaintDetails(int complaintId, int clientId);
         public void DeletePendingComplaint(int complaintId, int clientId);
         public IEnumerable<Complaint> GetComplaintsByClientId(int clientId);
@@ -36,13 +36,14 @@ namespace HD.ApplicationCore.Interfaces
         public Complaint GetComplaintByTitle(int clientId, string title);
         public void ValidateClosure(int complaintId, int clientId, bool resolved);
         public void UpdateComplaintByClient(int complaintId, int clientId, string title, 
-            string description, ComplaintType type, string? filePath, int featureId);
+            string description, ComplaintType type, List<string>? filePath, int featureId);
 
 
         //Les Services de l'Admin
         public Complaint GetComplaintDetailsByAdmin(int adminId, int complaintId);
         public void UpdateComplaintState(int adminId, int complaintId, State newState);
         public void RollbackComplaintToAgent(int adminId, int complaintId);
+        public IEnumerable<Complaint> GetComplaintsByClientName(string clientName);
 
     }
 }

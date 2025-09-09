@@ -14,7 +14,7 @@ namespace HD.ApplicationCore.Services
         {
         }
 
-        //Récuperer les messages d'un réclamation
+        //Récuperer les messages d'une réclamation
         public IEnumerable<Message> GetMessagesByComplaint(int complaintId)
         {
             return GetMany(m => m.ComplaintFK == complaintId)

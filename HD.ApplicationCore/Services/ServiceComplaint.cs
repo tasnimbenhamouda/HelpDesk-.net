@@ -14,26 +14,34 @@ namespace HD.ApplicationCore.Services
         {
         }
 
-        //LA création d'une récalamtion par un client X
-        public void CreateComplaint(int clientId, string title, string description, ComplaintType type, string? filePath, int featureId)
+        //Création d'une récalamtion par un client X
+        public void CreateComplaint(int clientId, string title, string description, ComplaintType type, List<string>? filePaths, int featureId)
         {
             var complaint = new Complaint
             {
                 Title = title,
                 Description = description,
                 ComplaintType = type,
-                FilePath = filePath,
+                ComplaintFiles = new List<ComplaintFile>(),
                 FeatureFK = featureId,
                 ClientFK = clientId,
                 SubmissionDate = DateTime.Now,
                 ComplaintState = State.Pending,
             };
 
+            if (filePaths != null && filePaths.Any())
+            {
+                foreach (var path in filePaths)
+                {
+                    complaint.ComplaintFiles.Add(new ComplaintFile { FilePath = path });
+                }
+            }
+
             Add(complaint);
         }
 
         public void UpdateComplaintByClient(int complaintId, int clientId, 
-            string title, string description, ComplaintType type, string? filePath, int featureId)
+            string title, string description, ComplaintType type, List<string>? filePath, int featureId)
         {
             // 1) Charger et vérifier l’appartenance
             var complaint = Get(c => c.ComplaintId == complaintId && c.ClientFK == clientId);
@@ -50,8 +58,13 @@ namespace HD.ApplicationCore.Services
             complaint.ComplaintType = type;
 
             // filePath est optionnel : si null, on garde l’existant
-            if (!string.IsNullOrWhiteSpace(filePath))
-                complaint.FilePath = filePath;
+            if (filePath != null && filePath.Any())
+            {
+                foreach (var path in filePath)
+                {
+                    complaint.ComplaintFiles.Add(new ComplaintFile { FilePath = path });
+                }
+            }
 
             // Feature est optionnelle
             complaint.FeatureFK = featureId;
@@ -86,7 +99,10 @@ namespace HD.ApplicationCore.Services
         // Récupérer les détails d’une réclamation d’un client
         public Complaint GetComplaintDetails(int complaintId, int clientId)
         {
-            return Get(c => c.ComplaintId == complaintId && c.ClientFK == clientId);
+            return Get(c => c.ComplaintId == complaintId && c.ClientFK == clientId,
+                       c => c.ComplaintFiles,  
+                       c => c.Feature,         
+                       c => c.Client);         
         }
 
         // Récupérer les réclamations ouvertes d’un client (Pending ou InProgress).
@@ -117,7 +133,7 @@ namespace HD.ApplicationCore.Services
         public IEnumerable<Complaint> GetComplaintsByFeature(int clientId, Feature f)
         {
             return GetMany(c=>c.ClientFK==clientId &&
-                              c.FeatureFK== f.FeatureId);
+                              c.Feature.Name== f.Name);
         }
 
         public IEnumerable<Complaint> GetComplaintsBySubmissionDate(int clientId, DateTime date)
@@ -132,7 +148,7 @@ namespace HD.ApplicationCore.Services
                             ( c.Title == title));
         }
 
-        //Un client juge que une réclamation est resolved ou unresolved une fois son state est closed, si elle est unresloved elle est remise à in_progress
+        //Un client juge qu'une réclamation est resolved ou unresolved une fois son state est Processed, si elle est unresloved elle est remise à in_progress
         public void ValidateClosure(int complaintId, int clientId, bool resolved)
         {
             var complaint = Get(c => c.ComplaintId == complaintId && c.ClientFK == clientId);
@@ -140,13 +156,14 @@ namespace HD.ApplicationCore.Services
             if (complaint == null)
                 throw new ArgumentException("Réclamation introuvable ou n'appartient pas à ce client.");
 
-            if (complaint.ComplaintState != State.Closed)
+            if (complaint.ComplaintState != State.Processed)
                 throw new InvalidOperationException("La réclamation doit être 'Closed' avant validation.");
 
             if (resolved)
             {
                 // Juste marquer la réclamation comme résolue
                 complaint.ComplaintStatus = Status.Resolved;
+                complaint.ComplaintState=State.Closed;
             }
 
             else
@@ -160,6 +177,9 @@ namespace HD.ApplicationCore.Services
 
 
         }
+
+
+
 
         //Les services de l'agent: 
 
@@ -188,7 +208,7 @@ namespace HD.ApplicationCore.Services
 
         public IEnumerable<Complaint> GetComplaintsByFeature(Feature feature)
         {
-            return GetMany(c => c.FeatureFK == feature.FeatureId);
+            return GetMany(c => c.Feature.Name == feature.Name);
         }
 
         public IEnumerable<Complaint> GetComplaintsByProcessedDate(DateTime date)
@@ -207,7 +227,11 @@ namespace HD.ApplicationCore.Services
         public Complaint GetComplaintDetailsByAdmin(int adminId, int complaintId)
         {
             return Get(c => c.ComplaintId == complaintId &&
-                        c.AgentClaimLogs.Any(log => log.AdminFK == adminId));
+                    c.AgentClaimLogs.Any(log => log.AdminFK == adminId),
+               c => c.ComplaintFiles,
+               c => c.Feature,
+               c => c.Client,
+               c => c.AgentClaimLogs);
         }
 
         public void UpdateComplaintState(int adminId, int complaintId, State newState)
@@ -249,5 +273,9 @@ namespace HD.ApplicationCore.Services
             }
         }
 
+        public IEnumerable<Complaint> GetComplaintsByClientName(string clientName)
+        {
+            return GetMany(c=>c.Client.clientName.Equals(clientName));
+        }
     }
 }

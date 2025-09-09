@@ -8,6 +8,6 @@ namespace HD.ApplicationCore.Domain
 {
     public enum TypeSender
     {
-        Client, Agent
+        Client, Admin
     }
 }

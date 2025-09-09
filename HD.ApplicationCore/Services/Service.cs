@@ -1,4 +1,5 @@
 ﻿using HD.ApplicationCore.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,6 +54,20 @@ namespace HD.ApplicationCore.Services
         public virtual T Get(Expression<Func<T, bool>> where) //affiche un objet de T avec une condition
         {
             return _repository.Get(where);
+        }
+
+        public virtual T Get(Expression<Func<T, bool>> where,
+                     params Expression<Func<T, object>>[] includes)
+        {
+            var query = _repository.GetAll().AsQueryable();
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                    query = query.Include(include);
+            }
+
+            return query.FirstOrDefault(where);
         }
 
         public void Commit()

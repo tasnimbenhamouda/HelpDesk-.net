@@ -23,6 +23,7 @@ namespace HD.Infrastructure
         public DbSet<AgentClaimLog> AgentClaimLogs { get; set; }
         public DbSet<Client> Clients { get; set; }
         public DbSet<Complaint> Complaints { get; set; }
+        public DbSet<ComplaintFile> ComplaintFiles { get; set; }
         public DbSet<Faq> Faqs { get; set; }
         public DbSet<Feature> Features { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
