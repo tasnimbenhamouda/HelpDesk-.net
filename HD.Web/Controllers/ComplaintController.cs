@@ -28,7 +28,7 @@ namespace HD.Web.Controllers
         {
             var clientIdClaim = User.FindFirstValue("UserId");
             if (string.IsNullOrEmpty(clientIdClaim))
-                return Unauthorized("Impossible de récupérer l'ID utilisateur.");
+                return Unauthorized("Cannot get user ID.");
 
             var clientId = int.Parse(clientIdClaim);
 
@@ -63,14 +63,18 @@ namespace HD.Web.Controllers
                 request.FeatureId
             );
 
-            return Ok("Réclamation créée avec succès.");
+            return Ok("Claim successfully submitted.");
         }
 
         [HttpPut("update/{complaintId}")]
         [Authorize(Roles = "Client")]
-        public IActionResult UpdateComplaint(int complaintId, [FromBody] UpdateComplaintRequest request)
+        public IActionResult UpdateComplaint(int complaintId, [FromForm] UpdateComplaintRequest request)
         {
-            var clientId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var clientIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(clientIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var clientId = int.Parse(clientIdClaim);
 
             var filePaths = new List<string>();
 
@@ -104,25 +108,33 @@ namespace HD.Web.Controllers
                 request.FeatureId
             );
 
-            return Ok("Réclamation mise à jour avec succès.");
+            return Ok("Claim successfully updated.");
         }
 
         [HttpDelete("delete/{complaintId}")]
         [Authorize(Roles = "Client")]
         public IActionResult DeleteComplaint(int complaintId)
         {
-            var clientId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var clientIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(clientIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var clientId = int.Parse(clientIdClaim);
 
             sc.DeletePendingComplaint(complaintId, clientId);
 
-            return Ok("Réclamation supprimée avec succès.");
+            return Ok("Claim successfully deleted.");
         }
 
         [HttpGet("my-complaints")]
         [Authorize(Roles = "Client")]
         public IActionResult GetMyComplaints()
         {
-            var clientId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var clientIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(clientIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var clientId = int.Parse(clientIdClaim);
             var complaints = sc.GetComplaintsByClientId(clientId);
             return Ok(complaints);
         }
@@ -131,12 +143,16 @@ namespace HD.Web.Controllers
         [Authorize(Roles = "Client")]
         public IActionResult GetComplaintDetailsForClient(int complaintId)
         {
-            var clientId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var clientIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(clientIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var clientId = int.Parse(clientIdClaim);
 
             var complaint = sc.GetComplaintDetails(complaintId, clientId);
 
             if (complaint == null)
-                return NotFound("Réclamation introuvable ou n'appartient pas à ce client.");
+                return NotFound("Calim not found, or doesn't belong to this client.");
 
             return Ok(new
             {
@@ -157,11 +173,15 @@ namespace HD.Web.Controllers
         [Authorize(Roles = "Client")]
         public IActionResult ValidateClosure(int complaintId, [FromBody] bool resolved)
         {
-            var clientId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var clientIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(clientIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var clientId = int.Parse(clientIdClaim);
 
             sc.ValidateClosure(complaintId, clientId, resolved);
 
-            return Ok("Validation de la clôture effectuée.");
+            return Ok("Validation of the closure completed.");
         }
 
 
@@ -169,7 +189,12 @@ namespace HD.Web.Controllers
         [Authorize(Roles = "Client")]
         public IActionResult FilterClientComplaints([FromQuery] ComplaintFilterRequest request)
         {
-            var clientId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var clientIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(clientIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var clientId = int.Parse(clientIdClaim);
+
             IEnumerable<Complaint> complaints = sc.GetComplaintsByClientId(clientId);
 
             if (request.State.HasValue)
@@ -198,7 +223,12 @@ namespace HD.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult GetAssignedComplaints()
         {
-            var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var adminIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(adminIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var adminId = int.Parse(adminIdClaim);
+
             var complaints = sc.GetComplaintsByAdmin(adminId);
             return Ok(complaints);
         }
@@ -207,12 +237,16 @@ namespace HD.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult GetComplaintDetailsForAdmin(int complaintId)
         {
-            var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var adminIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(adminIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var adminId = int.Parse(adminIdClaim);
 
             var complaint = sc.GetComplaintDetailsByAdmin(adminId, complaintId);
 
             if (complaint == null)
-                return NotFound("Réclamation introuvable ou non assignée à cet administrateur.");
+                return NotFound("Claim not found, or not assigned to this admin.");
 
             return Ok(new
             {
@@ -242,11 +276,15 @@ namespace HD.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult UpdateComplaintState(int complaintId, [FromBody] UpdateComplaintStateRequest request)
         {
-            var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var adminIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(adminIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var adminId = int.Parse(adminIdClaim);
 
             sc.UpdateComplaintState(adminId, complaintId, request.NewState);
 
-            return Ok("État de la réclamation mis à jour avec succès.");
+            return Ok("Claim state is successfuly updated.");
         }
 
 
@@ -254,11 +292,15 @@ namespace HD.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult RollbackComplaint(int complaintId)
         {
-            var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var adminIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(adminIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var adminId = int.Parse(adminIdClaim);
 
             sc.RollbackComplaintToAgent(adminId, complaintId);
 
-            return Ok("Réclamation rollbackée à l’agent.");
+            return Ok("Claim is rolledback to the agent.");
         }
 
         [HttpGet("admin/filter")]
@@ -266,7 +308,12 @@ namespace HD.Web.Controllers
         public IActionResult FilterAdminComplaints([FromQuery] ComplaintFilterRequest req)
         {
 
-            var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var adminIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(adminIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var adminId = int.Parse(adminIdClaim);
+
             IEnumerable<Complaint> complaints = sc.GetComplaintsByAdmin(adminId);
 
             if (req.State.HasValue)
@@ -298,6 +345,12 @@ namespace HD.Web.Controllers
         [Authorize(Roles = "Agent")]
         public IActionResult GetAllComplaints()
         {
+            var agentIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(agentIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var agentId = int.Parse(agentIdClaim);
+
             var complaints = sc.GetAll();
             return Ok(complaints);
         }
@@ -306,18 +359,27 @@ namespace HD.Web.Controllers
         [Authorize(Roles = "Agent")]
         public IActionResult AssignComplaint(int complaintId, int adminId)
         {
-            var agentId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var agentIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(agentIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var agentId = int.Parse(agentIdClaim);
 
             sacl.AssignComplaintToAdmin(complaintId, agentId, adminId);
 
-            return Ok("Réclamation assignée à un admin.");
+            return Ok("Claim is assigned to an admin.");
         }
 
         [HttpGet("agent/filter")]
         [Authorize(Roles = "Agent")]
         public IActionResult FilterAgentComplaints([FromQuery] ComplaintFilterRequest req)
         {
-            var agentId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var agentIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(agentIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var agentId = int.Parse(agentIdClaim);
+
             IEnumerable<Complaint> complaints = sc.GetAll();
 
             if(req.State.HasValue)

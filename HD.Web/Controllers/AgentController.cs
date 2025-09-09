@@ -25,6 +25,12 @@ namespace HD.Web.Controllers
         [HttpGet("admins/by-status")]
         public IActionResult GetAdminsByAccountStatus([FromQuery] AccountStatus status)
         {
+            var agentIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(agentIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var agentId = int.Parse(agentIdClaim);
+
             var admins = sa.GetAdminsByStatus(status);
             return Ok(admins);
 
@@ -33,7 +39,11 @@ namespace HD.Web.Controllers
         [HttpPut("admin/{adminId}/status")]
         public IActionResult UpdatedAdminAccountStatus(int adminId, [FromQuery] UpdateAdminStatusRequest req)
         {
-            var agentId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var agentIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(agentIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var agentId = int.Parse(agentIdClaim);
 
             sa.UpdateAccountStatus(adminId,req.NewStatus, agentId);
 
@@ -44,7 +54,11 @@ namespace HD.Web.Controllers
         [HttpPost("assign/{complaintId}/{adminId}")]
         public IActionResult AssignComplaintToAdmin(int complaintId, int adminId)
         {
-            var agentId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var agentIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(agentIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var agentId = int.Parse(agentIdClaim);
 
             sacl.AssignComplaintToAdmin(complaintId,agentId,adminId);
 
@@ -54,6 +68,12 @@ namespace HD.Web.Controllers
         [HttpGet("assignments/by-admin/{adminId}")]
         public IActionResult GetAssignmentsByAdmin(int adminId)
         {
+            var agentIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(agentIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var agentId = int.Parse(agentIdClaim);
+
             var assignments = sacl.GetAssignmentsByAdmin(adminId);
             return Ok(assignments);
         }
@@ -61,6 +81,12 @@ namespace HD.Web.Controllers
         [HttpGet("assignments/by-complaint/{complaintId}")]
         public IActionResult GetAssignmentsByComplaint(int complaintId)
         {
+            var agentIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(agentIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var agentId = int.Parse(agentIdClaim);
+
             var assignments = sacl.GetAssignmentsByComplaint(complaintId);
             return Ok(assignments);
         }

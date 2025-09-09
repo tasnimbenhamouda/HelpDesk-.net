@@ -23,7 +23,12 @@ namespace HD.Web.Controllers
         [HttpPost("compaintId")]
         public IActionResult SendMessage (int complaintId, [FromBody] MessageRequest req)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var userId = int.Parse(userIdClaim);
+
             var role = User.FindFirstValue(ClaimTypes.Role);
 
             // Vérifier si l’utilisateur a bien le droit d’envoyer un message pour cette réclamation

@@ -26,7 +26,11 @@ namespace HD.Web.Controllers
         [Authorize(Roles = "Client")]
         public IActionResult AddFeedback (int complaintId, [FromBody] FeedbackRequest req)
         {
-            var clientId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var clientIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(clientIdClaim))
+                return Unauthorized("Cannot get user ID.");
+
+            var clientId = int.Parse(clientIdClaim);
 
             //Vérifier que la réclamation appartient au client 
             var complaint = sc.Get(c => c.ComplaintId == complaintId && c.ClientFK == clientId);
