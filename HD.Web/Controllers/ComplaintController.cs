@@ -24,9 +24,14 @@ namespace HD.Web.Controllers
         //Endpoints Client
         [HttpPost("Create")]
         [Authorize(Roles="Client")]
-        public IActionResult CreateComplaint([FromBody] CreateComplaintRequest request)
+        public IActionResult CreateComplaint([FromForm] CreateComplaintRequest request)
         {
-            var clientId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var clientIdClaim = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(clientIdClaim))
+                return Unauthorized("Impossible de récupérer l'ID utilisateur.");
+
+            var clientId = int.Parse(clientIdClaim);
+
             var filePaths = new List<string>();
 
             if (request.Files != null && request.Files.Any())

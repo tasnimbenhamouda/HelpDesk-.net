@@ -1,5 +1,7 @@
 ﻿using HD.ApplicationCore.Domain;
 using HD.ApplicationCore.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +40,10 @@ namespace HD.ApplicationCore.Services
             }
 
             Add(complaint);
+            Console.WriteLine("Avant Commit");
+            Commit();
+            Console.WriteLine("Après Commit");
+
         }
 
         public void UpdateComplaintByClient(int complaintId, int clientId, 
