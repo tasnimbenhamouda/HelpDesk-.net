@@ -33,6 +33,9 @@ namespace HD.ApplicationCore.Services
                 SendDate = DateTime.Now
             };
             Add(message);
+            Console.WriteLine("Before Commit");
+            Commit();
+            Console.WriteLine("After Commit");
         }
     }
 }

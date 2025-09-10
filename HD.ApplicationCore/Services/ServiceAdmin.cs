@@ -24,7 +24,7 @@ namespace HD.ApplicationCore.Services
             var admin = Get(a => a.AgentId == adminId);
 
             if (admin == null)
-                throw new ArgumentException("Admin introuvable.");
+                throw new ArgumentException("Admin not found.");
 
             admin.AccountStatus = newStatus;
             Update(admin);

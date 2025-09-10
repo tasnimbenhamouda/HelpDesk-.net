@@ -25,6 +25,9 @@ namespace HD.ApplicationCore.Services
             };
 
             Add(log);
+            Console.WriteLine("Before Commit");
+            Commit();
+            Console.WriteLine("After Commit");
         }
 
         public IEnumerable<AgentClaimLog> GetAssignmentsByAdmin(int adminId)

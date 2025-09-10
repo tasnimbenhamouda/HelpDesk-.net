@@ -23,6 +23,9 @@ namespace HD.ApplicationCore.Services
                 Message = comment,
             };
             Add(feedback);
+            Console.WriteLine("Before Commit");
+            Commit();
+            Console.WriteLine("After Commit");
         }
 
         public Feedback GetFeedbackByComplaint(int complaintId)

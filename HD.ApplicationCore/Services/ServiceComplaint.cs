@@ -40,9 +40,9 @@ namespace HD.ApplicationCore.Services
             }
 
             Add(complaint);
-            Console.WriteLine("Avant Commit");
+            Console.WriteLine("Before Commit");
             Commit();
-            Console.WriteLine("Après Commit");
+            Console.WriteLine("After Commit");
 
         }
 
@@ -52,11 +52,11 @@ namespace HD.ApplicationCore.Services
             // 1) Charger et vérifier l’appartenance
             var complaint = Get(c => c.ComplaintId == complaintId && c.ClientFK == clientId);
             if (complaint == null)
-                throw new ArgumentException("Réclamation introuvable ou n'appartient pas à ce client.");
+                throw new ArgumentException("Calim not found, or doesn't belong to this client.");
 
             // 2) Autoriser la modification uniquement si l’état est Pending
             if (complaint.ComplaintState != State.Pending)
-                throw new InvalidOperationException("Seules les réclamations en attente (Pending) peuvent être modifiées par le client.");
+                throw new InvalidOperationException("Only claims with a pending status can be modified by the customer.");
 
             // 3) Appliquer les changements autorisés côté client
             complaint.Title = title?.Trim();
@@ -79,6 +79,9 @@ namespace HD.ApplicationCore.Services
             //    (Business: l’état reste Pending tant que l’agent/admin ne le prend pas en charge)
 
             Update(complaint);
+            Console.WriteLine("Before Commit");
+            Commit();
+            Console.WriteLine("After Commit");
         }
 
 
@@ -88,12 +91,15 @@ namespace HD.ApplicationCore.Services
             var complaint = Get(c => c.ComplaintId == complaintId && c.ClientFK == clientId);
 
             if (complaint == null)
-                throw new ArgumentException("Réclamation introuvable.");
+                throw new ArgumentException("Calim not found.");
 
             if (complaint.ComplaintState != State.Pending)
-                throw new InvalidOperationException("Seules les réclamations en attente peuvent être supprimées.");
+                throw new InvalidOperationException("Only claims with a pending status can be deleted.");
 
             Delete(complaint);
+            Console.WriteLine("Before Commit");
+            Commit();
+            Console.WriteLine("After Commit");
         }
 
         // Récupérer toutes les réclamations d’un client.
@@ -160,10 +166,10 @@ namespace HD.ApplicationCore.Services
             var complaint = Get(c => c.ComplaintId == complaintId && c.ClientFK == clientId);
 
             if (complaint == null)
-                throw new ArgumentException("Réclamation introuvable ou n'appartient pas à ce client.");
+                throw new ArgumentException("Calim not found, or doesn't belong to this client.");
 
             if (complaint.ComplaintState != State.Processed)
-                throw new InvalidOperationException("La réclamation doit être 'Closed' avant validation.");
+                throw new InvalidOperationException("Claim must be 'Closed' before validation.");
 
             if (resolved)
             {
@@ -180,6 +186,9 @@ namespace HD.ApplicationCore.Services
             }
 
             Update(complaint);
+            Console.WriteLine("Before Commit");
+            Commit();
+            Console.WriteLine("After Commit");
 
 
         }
@@ -246,13 +255,16 @@ namespace HD.ApplicationCore.Services
                                  c.AgentClaimLogs.Any(l => l.AdminFK == adminId));
 
             if (complaint == null)
-                throw new ArgumentException("Réclamation introuvable ou non assignée à cet admin.");
+                throw new ArgumentException("Calim not found, or doesn't belong to this admin.");
 
             complaint.ComplaintState = newState;
             if (newState == State.Closed || newState == State.Processed)
                 complaint.ProcessedDate = DateTime.Now;
 
             Update(complaint);
+            Console.WriteLine("Before Commit");
+            Commit();
+            Console.WriteLine("After Commit");
         }
 
         public void RollbackComplaintToAgent(int adminId, int complaintId)
@@ -262,7 +274,7 @@ namespace HD.ApplicationCore.Services
                                      c.AgentClaimLogs.Any(l => l.AdminFK == adminId && l.Affected));
 
             if (complaint == null)
-                throw new ArgumentException("Réclamation introuvable ou non assignée à cet admin.");
+                throw new ArgumentException("Claim not found, or not assigned to this admin.");
 
             // 2) Mettre l'état de la réclamation en attente
             complaint.ComplaintState = State.Pending;
