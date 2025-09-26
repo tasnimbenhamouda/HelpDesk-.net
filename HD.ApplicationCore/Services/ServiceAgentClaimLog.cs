@@ -1,5 +1,6 @@
 ﻿using HD.ApplicationCore.Domain;
 using HD.ApplicationCore.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,5 +41,38 @@ namespace HD.ApplicationCore.Services
         {
             return GetMany(l => l.ComplaintFK == complaintId);
         }
+
+
+        //Dashboard
+        public Dictionary<string, double> GetAverageResolutionTimeByAdmin()
+        {
+            var logs = GetMany(l => l.Affected == true && l.ProcessedDate >= l.AffectedDate)
+                .ToList();
+
+            if (!logs.Any()) return new Dictionary<string, double>();
+
+            return logs
+                .GroupBy(l => l.Admin.Name)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Average(l => (l.ProcessedDate - l.AffectedDate).Value.TotalHours)
+                );
+        }
+
+        public Dictionary<string, int> GetComplaintsCountByAdmin()
+        {
+            // On prend uniquement les logs actifs (Affected = true)
+            var logs = GetMany(l => l.Affected == true).ToList();
+
+            if (!logs.Any()) return new Dictionary<string, int>();
+
+            return logs
+                .GroupBy(l => l.Admin != null ? l.Admin.Name : "Inconnu")
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Count()
+                );
+        }
+
     }
 }

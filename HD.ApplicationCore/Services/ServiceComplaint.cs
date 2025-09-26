@@ -12,8 +12,11 @@ namespace HD.ApplicationCore.Services
 {
     public class ServiceComplaint : Service<Complaint>, IServiceComplaint
     {
+        private readonly IUnitOfWork _unitOfWork;
+
         public ServiceComplaint(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
+            _unitOfWork = unitOfWork;
         }
 
         //Création d'une récalamtion par un client X
@@ -195,7 +198,6 @@ namespace HD.ApplicationCore.Services
 
 
 
-
         //Les services de l'agent: 
 
         // Récupérer les réclamations par date de soumission.
@@ -269,32 +271,91 @@ namespace HD.ApplicationCore.Services
 
         public void RollbackComplaintToAgent(int adminId, int complaintId)
         {
-            // 1) Vérifier que la réclamation est bien affectée à cet admin
+            // 1️⃣ Vérifier que la réclamation est bien assignée à cet admin
             var complaint = Get(c => c.ComplaintId == complaintId &&
                                      c.AgentClaimLogs.Any(l => l.AdminFK == adminId && l.Affected));
 
             if (complaint == null)
                 throw new ArgumentException("Claim not found, or not assigned to this admin.");
 
-            // 2) Mettre l'état de la réclamation en attente
+            // 2️⃣ Mettre l'état de la réclamation en attente
             complaint.ComplaintState = State.Pending;
             Update(complaint);
 
-            // 3) Désactiver l'affectation en cours dans AgentClaimLog
             var activeLog = complaint.AgentClaimLogs
-                                     .FirstOrDefault(l => l.AdminFK == adminId && l.Affected);
+                          .FirstOrDefault(l => l.Affected);
 
-            if (activeLog != null)
+            // 3️⃣ Ajouter un nouveau log pour enregistrer le rollback
+            var rollbackLog = new AgentClaimLog
             {
-                activeLog.Affected = false;
-                activeLog.ProcessedDate = DateTime.Now;
-            }
+                ComplaintFK = complaintId,
+                AdminFK = adminId,
+                AgentFK = activeLog.AgentFK,
+                Affected = false,              // rollback = non affecté
+                AffectedDate = DateTime.Now,   // date du rollback
+                ProcessedDate = null           // pas encore traité
+            };
+
+            _unitOfWork.Repository<AgentClaimLog>().Add(rollbackLog);
+
+            // 4️⃣ Commit pour persister réclamation + log
+            Console.WriteLine("Before Commit");
+            Commit();
+            Console.WriteLine("After Commit");
         }
+
+
 
         public IEnumerable<Complaint> GetComplaintsByClientName(string clientName)
         {
             return GetMany(c=>c.Client.clientName.Equals(clientName));
         }
 
+
+        //Dashboard
+        public int GetTotalComplaints()
+        {
+            return GetAll().Count();
+        }
+
+        public double GetAverageResolutionTime()
+        {
+            var complaints = GetMany(c => c.ProcessedDate > c.SubmissionDate)
+                .ToList();
+
+            if (!complaints.Any()) return 0;
+
+            return complaints.Average(c => (c.ProcessedDate - c.SubmissionDate).TotalHours);
+        }
+
+        public Dictionary<Feature, int> GetComplaintsCountByFeature()
+        {
+            return GetAll()
+                    .GroupBy(c => c.Feature)
+                    .OrderByDescending(g => g.Count()) // trier par nombre décroissant
+                    .Take(5) // prendre seulement 5
+                    .ToDictionary(g => g.Key, g => g.Count());
+        }
+
+        public Dictionary<ComplaintType, int> GetComplaintsCountByType()
+        {
+           return GetAll()
+                .GroupBy(c => c.ComplaintType)
+                .ToDictionary(g => g.Key, g => g.Count());
+        }
+
+        public Dictionary<State, int> GetComplaintsCountByState()
+        {
+            return GetAll().
+                GroupBy(c => c.ComplaintState)
+             .ToDictionary(g => g.Key, g => g.Count());
+        }
+
+        public Dictionary<Status, int> GetComplaintsCountByStatus()
+        {
+            return GetAll()
+                .GroupBy(c => c.ComplaintStatus)
+                .ToDictionary(g => g.Key, g => g.Count());
+        }
     }
 }

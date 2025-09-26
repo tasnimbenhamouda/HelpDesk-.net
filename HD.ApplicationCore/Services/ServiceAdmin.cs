@@ -23,6 +23,13 @@ namespace HD.ApplicationCore.Services
             return admin.Name;
         }
 
+        public IEnumerable<object> GetAdmins()
+        {
+            return GetAll()
+                .Select(a => new { a.AgentId, a.Name })
+                .ToList();
+        }
+
         public IEnumerable<Admin> GetAdminsByStatus(AccountStatus status)
         {
             return GetMany(a => a.AccountStatus == status);

@@ -12,5 +12,8 @@ namespace HD.ApplicationCore.Interfaces
         public void AssignComplaintToAdmin(int complaintId, int agentId, int adminId);
         public IEnumerable<AgentClaimLog> GetAssignmentsByAdmin(int adminId);
         public IEnumerable<AgentClaimLog> GetAssignmentsByComplaint(int complaintId);
+        public Dictionary<string, int> GetComplaintsCountByAdmin();
+        public Dictionary<string, double> GetAverageResolutionTimeByAdmin();
+
     }
 }

@@ -403,7 +403,20 @@ namespace HD.Web.Controllers
             var agentId = int.Parse(agentIdClaim);
 
             var complaints = sc.GetAll();
-            return Ok(complaints);
+            var complaintDtos = complaints.Select(c => new ComplaintDto
+            {
+                ComplaintId = c.ComplaintId,
+                Title = c.Title,
+                Description = c.Description,
+                SubmissionDate = c.SubmissionDate,
+                ProcessedDate = c.ProcessedDate,
+                ComplaintState = c.ComplaintState,
+                ComplaintStatus = c.ComplaintStatus,
+                ComplaintType = c.ComplaintType,
+                FeatureFK = c.FeatureFK,
+                ClientFK = c.ClientFK
+            });
+            return Ok(complaintDtos);
         }
 
         [HttpPost("assign/{complaintId}/{adminId}")]

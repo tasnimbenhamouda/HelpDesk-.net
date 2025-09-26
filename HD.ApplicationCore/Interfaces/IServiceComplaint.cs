@@ -45,5 +45,13 @@ namespace HD.ApplicationCore.Interfaces
         public void RollbackComplaintToAgent(int adminId, int complaintId);
         public IEnumerable<Complaint> GetComplaintsByClientName(string clientName);
 
+
+        //Dashboard
+        public int GetTotalComplaints();
+        public double GetAverageResolutionTime();
+        public Dictionary<Feature, int> GetComplaintsCountByFeature();
+        public Dictionary<ComplaintType, int> GetComplaintsCountByType();
+        public Dictionary<State, int> GetComplaintsCountByState();
+        public Dictionary<Status, int> GetComplaintsCountByStatus();
     }
 }

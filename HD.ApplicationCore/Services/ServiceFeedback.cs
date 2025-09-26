@@ -28,6 +28,15 @@ namespace HD.ApplicationCore.Services
             Console.WriteLine("After Commit");
         }
 
+        public double GetAverageClientFeedback()
+        {
+           var feedback = GetAll().ToList();
+
+            if (!feedback.Any()) return 0;
+
+            return feedback.Average(f => f.Rating);
+        }
+
         public Feedback GetFeedbackByComplaint(int complaintId)
         {
             return Get(f => f.ComplaintFK == complaintId);

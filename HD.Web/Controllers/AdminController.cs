@@ -1,4 +1,5 @@
 ﻿using HD.ApplicationCore.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,6 +28,15 @@ namespace HD.Web.Controllers
             {
                 return NotFound(ex.Message);
             }
+        }
+
+
+        [HttpGet("list")]
+        [Authorize(Roles = "Agent")]
+        public IActionResult GetAdmins()
+        {
+            var admins = sa.GetAdmins();
+            return Ok(admins);
         }
     }
 }
