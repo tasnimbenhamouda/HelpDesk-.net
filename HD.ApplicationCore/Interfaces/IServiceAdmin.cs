@@ -11,5 +11,7 @@ namespace HD.ApplicationCore.Interfaces
     {
         void UpdateAccountStatus(int adminId, AccountStatus newStatus, int agentId);
         IEnumerable<Admin> GetAdminsByStatus(AccountStatus status);
+
+        public string? GetAdminName(int adminId);
     }
 }

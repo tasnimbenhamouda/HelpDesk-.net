@@ -41,6 +41,11 @@ namespace HD.Infrastructure
             return _dbSet.AsEnumerable();
         }
 
+        public IEnumerable<TEntity> GetAll(string includeProperties)
+        {
+            throw new NotImplementedException();
+        }
+
         public TEntity GetById(params object[] keyValues)
         {
             return _dbSet.Find(keyValues);

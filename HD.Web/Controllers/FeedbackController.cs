@@ -42,7 +42,7 @@ namespace HD.Web.Controllers
             //Ajout du feedback
             sf.AddFeedback(complaintId,req.Rating,req.Message);
 
-            return Ok(new { message = "Feedback successfully added" });
+            return Ok("Feedback successfully added");
 
         }
 
@@ -51,9 +51,16 @@ namespace HD.Web.Controllers
         public IActionResult GetFeedback(int complaintId)
         {
             var feedback = sf.GetFeedbackByComplaint(complaintId);
+
             if (feedback == null) return NotFound("Feedback not found.");
 
-            return Ok(feedback);
+
+            var feedbackDto = new FeedbackRequest
+            {
+                Rating = feedback.Rating,
+                Message = feedback.Message
+            };
+            return Ok(feedbackDto);
         }
     }
 

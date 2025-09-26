@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace HD.ApplicationCore.Interfaces
 {
-    public interface IServiceFeature : IService<Feature>
+    public interface IServiceAgent : IService<Agent>
     {
-        public IEnumerable<Feature> GetFeatureByClient(int clientId);
-
-        public string? GetFeatureNameById(int featureId);
+        public string? GetAgentName(int agentId);
     }
 }

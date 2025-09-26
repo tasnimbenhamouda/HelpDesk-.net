@@ -13,12 +13,12 @@ namespace HD.ApplicationCore.Services
     {
 
         private IGenericRepository<T> _repository;
-        private IUnitOfWork _unitOfWork;
+        private IUnitOfWork IUnitOfWork;
 
         public Service(IUnitOfWork unitOfWork)
         {
             _repository = unitOfWork.Repository<T>();
-            _unitOfWork = unitOfWork;
+            IUnitOfWork = unitOfWork;
         }
 
         public virtual void Add(T entity)
@@ -73,7 +73,7 @@ namespace HD.ApplicationCore.Services
         public void Commit()
         {
 
-            _unitOfWork.Save();
+            IUnitOfWork.Save();
 
         }
     }

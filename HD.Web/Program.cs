@@ -5,11 +5,20 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddCors(options => 
+{
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
 //creation des instances cnx et UnitOfWork
 builder.Services.AddDbContext<DbContext, HelpDeskContext>();
@@ -23,6 +32,10 @@ builder.Services.AddScoped<IServiceAdmin, ServiceAdmin>();
 builder.Services.AddScoped<IServiceAgentClaimLog, ServiceAgentClaimLog>();
 builder.Services.AddScoped<IServiceFeedback, ServiceFeedback>();
 builder.Services.AddScoped<IServiceMessage, ServiceMessage>();
+builder.Services.AddScoped<IServiceFeature, ServiceFeature>();
+builder.Services.AddScoped<IServiceAgent, ServiceAgent>();
+builder.Services.AddScoped<IServiceClient, ServiceClient>();
+builder.Services.AddScoped<IServiceComplaintFiles, ServiceComplaintFile>();
 
 
 //Swagger
@@ -82,6 +95,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddControllers()
+    .AddJsonOptions(opt =>
+    {
+        opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        opt.JsonSerializerOptions.WriteIndented = true;
+    });
+
+
 
 var app = builder.Build();
 
@@ -103,6 +124,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseCors();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

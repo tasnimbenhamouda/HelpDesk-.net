@@ -1,4 +1,5 @@
-﻿using HD.ApplicationCore.Interfaces;
+﻿//using AM.ApplicationCore.Interfaces;
+using HD.ApplicationCore.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -13,25 +14,25 @@ namespace HD.Infrastructure
         private readonly DbContext _context;
         private readonly Type repositoryType;
         private bool disposedValue;
-
+        //1
         public UnitOfWork(DbContext context, Type type)
         {
             _context = context;
             repositoryType = type;
         }
-
+        //2
         public IGenericRepository<T> Repository<T>() where T : class
         {
             return (IGenericRepository<T>)Activator.CreateInstance(repositoryType
                         .MakeGenericType(typeof(T)), _context);
         }
-
+        //3
         public int Save()
         {
             // Save changes with the default options
             return _context.SaveChanges();
         }
-
+        //4
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)

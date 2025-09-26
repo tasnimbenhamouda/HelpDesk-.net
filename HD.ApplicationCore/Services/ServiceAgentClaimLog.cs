@@ -21,6 +21,7 @@ namespace HD.ApplicationCore.Services
                 ComplaintFK = complaintId,
                 AgentFK = agentId,
                 AdminFK = adminId,
+                Affected = true,
                 AffectedDate = DateTime.Now
             };
 

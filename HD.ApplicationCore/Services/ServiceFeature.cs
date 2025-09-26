@@ -14,6 +14,7 @@ namespace HD.ApplicationCore.Services
         {
         }
 
+
         public IEnumerable<Feature> GetFeatureByClient(int clientId)
         {
             return GetMany(f => f.Complaints.Any(c => c.ClientFK == clientId));
@@ -23,6 +24,11 @@ namespace HD.ApplicationCore.Services
             //                                   .GetMany(c => c.ClientFK == clientId);
 
             //return complaints.Select(c => c.Feature).Distinct().ToList();
+        }
+
+        public string? GetFeatureNameById(int featureId)
+        {
+            return Get(f=>f.FeatureId == featureId).Name;
         }
     }
 }

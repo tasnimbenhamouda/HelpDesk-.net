@@ -1,5 +1,6 @@
 ﻿using HD.ApplicationCore.Domain;
 using HD.ApplicationCore.Interfaces;
+using HD.ApplicationCore.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,12 @@ namespace HD.Web.Controllers
     {
         IServiceComplaint sc;
         IServiceAgentClaimLog sacl;
-        public ComplaintController(IServiceComplaint sc, IServiceAgentClaimLog sacl)
+        IServiceComplaintFiles scf;
+        public ComplaintController(IServiceComplaint sc, IServiceAgentClaimLog sacl, IServiceComplaintFiles scf)
         {
             this.sc = sc;
             this.sacl = sacl;
+            this.scf = scf;
         }
 
 
@@ -135,9 +138,28 @@ namespace HD.Web.Controllers
                 return Unauthorized("Cannot get user ID.");
 
             var clientId = int.Parse(clientIdClaim);
+
+            // Service renvoie les entités Complaint
             var complaints = sc.GetComplaintsByClientId(clientId);
-            return Ok(complaints);
+
+            // Ici, mapping vers DTO
+            var complaintDtos = complaints.Select(c => new ComplaintDto
+            {
+                ComplaintId = c.ComplaintId,
+                Title = c.Title,
+                Description = c.Description,
+                SubmissionDate = c.SubmissionDate,
+                ProcessedDate = c.ProcessedDate,
+                ComplaintState = c.ComplaintState,
+                ComplaintStatus = c.ComplaintStatus,
+                ComplaintType = c.ComplaintType,
+                FeatureFK = c.FeatureFK,
+                ClientFK = c.ClientFK
+            });
+
+            return Ok(complaintDtos);
         }
+
 
         [HttpGet("client/{complaintId}/details")]
         [Authorize(Roles = "Client")]
@@ -163,7 +185,8 @@ namespace HD.Web.Controllers
                 complaint.SubmissionDate,
                 complaint.ComplaintState,
                 complaint.ComplaintStatus,
-                Feature = complaint.Feature?.Name,
+                complaint.FeatureFK,
+                complaint.ClientFK,
                 Files = complaint.ComplaintFiles?.Select(f => f.FilePath).ToList()
             });
         }
@@ -217,6 +240,21 @@ namespace HD.Web.Controllers
         }
 
 
+        [HttpDelete("{complaintId}/files")]
+        public IActionResult DeleteFile(int complaintId, [FromQuery] string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+                return BadRequest("File path is required.");
+
+            var deleted = scf.RemoveFile(filePath, complaintId);
+
+            if (!deleted)
+                return NotFound("File not found for this complaint.");
+
+            return Ok("File deleted successfully.");
+        }
+
+
         //Endpoints Admin 
 
         [HttpGet("assigned")]
@@ -230,7 +268,20 @@ namespace HD.Web.Controllers
             var adminId = int.Parse(adminIdClaim);
 
             var complaints = sc.GetComplaintsByAdmin(adminId);
-            return Ok(complaints);
+            var complaintDtos = complaints.Select(c => new ComplaintDto
+            {
+                ComplaintId = c.ComplaintId,
+                Title = c.Title,
+                Description = c.Description,
+                SubmissionDate = c.SubmissionDate,
+                ProcessedDate = c.ProcessedDate,
+                ComplaintState = c.ComplaintState,
+                ComplaintStatus = c.ComplaintStatus,
+                ComplaintType = c.ComplaintType,
+                FeatureFK = c.FeatureFK,
+                ClientFK = c.ClientFK
+            });
+            return Ok(complaintDtos);
         }
 
         [HttpGet("admin/{complaintId}/details")]
@@ -413,9 +464,46 @@ namespace HD.Web.Controllers
              
         }
 
+
+        [HttpGet("download")]
+        public IActionResult DownloadFile([FromQuery] string path)
+        {
+            try
+            {
+                var bytes = scf.DownloadFile(path);
+                var fileName = Path.GetFileName(path);
+                return File(bytes, "application/octet-stream", fileName);
+            }
+            catch (FileNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+
+
+
+
+
+
     }
 
     //Les Classes DTO
+
+    public class ComplaintDto
+    {
+        public int ComplaintId { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public DateTime SubmissionDate { get; set; }
+        public DateTime? ProcessedDate { get; set; }
+        public State ComplaintState { get; set; }
+        public Status ComplaintStatus { get; set; }
+        public ComplaintType ComplaintType { get; set; }
+        public int FeatureFK { get; set; }
+        public int ClientFK { get; set; }
+    }
+
 
     public class CreateComplaintRequest
     {
@@ -432,7 +520,7 @@ namespace HD.Web.Controllers
         public string Description { get; set; }
         public ComplaintType ComplaintType { get; set; }
         public List<IFormFile>? Files { get; set; }
-        public string? FilePath { get; set; }
+        public string? filePath { get; set; }
         public int FeatureId { get; set; }
     }
 

@@ -14,6 +14,15 @@ namespace HD.ApplicationCore.Services
         {
         }
 
+        public string? GetAdminName(int adminId)
+        {
+            var admin = Get(a => a.AgentId == adminId);
+            if (admin == null)
+                throw new KeyNotFoundException($"Admin with ID {adminId} not found.");
+
+            return admin.Name;
+        }
+
         public IEnumerable<Admin> GetAdminsByStatus(AccountStatus status)
         {
             return GetMany(a => a.AccountStatus == status);

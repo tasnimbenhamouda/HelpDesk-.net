@@ -9,6 +9,7 @@ namespace HD.ApplicationCore.Interfaces
 {
     public interface IServiceClient : IService<Client>
     {
+        public string? GetClientName(int ClientId);
 
     }
 }

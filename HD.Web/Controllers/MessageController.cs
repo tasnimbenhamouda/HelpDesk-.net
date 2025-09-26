@@ -38,7 +38,7 @@ namespace HD.Web.Controllers
             if (role == "Client" && complaint.ClientFK != userId)
                 return Forbid("Claim doesn't belong to this client.");
 
-            if (role == "Admin" && !complaint.AgentClaimLogs.Any(l => l.AdminFK == userId && l.Affected))
+            if (role == "Admin" && !complaint.AgentClaimLogs.Any(l => l.AdminFK == userId && l.Affected==true))
                 return Forbid("This claim is not assigned to this Admin.");
 
             // Enregistrer message
@@ -54,8 +54,19 @@ namespace HD.Web.Controllers
         public IActionResult GetMessages(int complaintId)
         {
             var messages = sm.GetMessagesByComplaint(complaintId);
-            return Ok(messages);
+
+            var messageDtos = messages.Select(m => new MessageDto
+            {
+                SenderId = m.SenderId,
+                Content = m.Content,
+                TypeSender = m.TypeSender,
+                SendDate = m.SendDate,
+                ComplaintFK = m.ComplaintFK
+            });
+
+            return Ok(messageDtos);
         }
+
 
 
     }
@@ -64,4 +75,14 @@ namespace HD.Web.Controllers
     {
         public string Content { get; set; }
     }
+
+    public class MessageDto
+    {
+        public int SenderId { get; set; }
+        public string Content { get; set; }
+        public TypeSender TypeSender { get; set; }
+        public DateTime SendDate { get; set; }
+        public int ComplaintFK { get; set; }
+    }
+
 }

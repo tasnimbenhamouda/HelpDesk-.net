@@ -1,4 +1,5 @@
-﻿using HD.ApplicationCore.Domain;
+﻿//using AM.ApplicationCore.Interfaces;
+using HD.ApplicationCore.Domain;
 using HD.ApplicationCore.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -69,9 +70,11 @@ namespace HD.ApplicationCore.Services
         public Dictionary<Feature, int> GetComplaintsCountByFeature()
         {
             return _unitOfWork.Repository<Complaint>()
-                .GetAll()
-                .GroupBy(c => c.Feature)
-                .ToDictionary(g => g.Key, g => g.Count());
+                    .GetAll()
+                    .GroupBy(c => c.Feature)
+                    .OrderByDescending(g => g.Count()) // trier par nombre décroissant
+                    .Take(5) // prendre seulement 5
+                    .ToDictionary(g => g.Key, g => g.Count());
         }
 
         // Répartition par Type

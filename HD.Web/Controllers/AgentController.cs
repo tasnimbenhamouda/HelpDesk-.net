@@ -14,11 +14,13 @@ namespace HD.Web.Controllers
     {
         IServiceAdmin sa;
         IServiceAgentClaimLog sacl;
+        IServiceAgent isa;
 
-        public AgentController(IServiceAdmin sa, IServiceAgentClaimLog sacl)
+        public AgentController(IServiceAdmin sa, IServiceAgentClaimLog sacl, IServiceAgent isa)
         {
             this.sa = sa;
             this.sacl = sacl;
+            this.isa = isa;
         }
 
         //Gestion des comptes des Admins
@@ -89,6 +91,17 @@ namespace HD.Web.Controllers
 
             var assignments = sacl.GetAssignmentsByComplaint(complaintId);
             return Ok(assignments);
+        }
+
+        [HttpGet("{agentId}/name")]
+        public IActionResult GetAgentName(int agentId)
+        {
+            var name = isa.GetAgentName(agentId);
+
+            if (name == null)
+                return NotFound("Agent not found");
+
+            return Ok(name);
         }
 
     }

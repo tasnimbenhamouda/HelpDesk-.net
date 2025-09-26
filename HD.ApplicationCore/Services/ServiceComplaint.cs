@@ -85,7 +85,7 @@ namespace HD.ApplicationCore.Services
         }
 
 
-        // Le client peut supprimer une réclamation si son état est en attente (Pending).
+        // Le client ne peut supprimer une réclamation que si son état est en attente (Pending).
         public void DeletePendingComplaint(int complaintId, int clientId)
         {
             var complaint = Get(c => c.ComplaintId == complaintId && c.ClientFK == clientId);
@@ -105,7 +105,7 @@ namespace HD.ApplicationCore.Services
         // Récupérer toutes les réclamations d’un client.
         public IEnumerable<Complaint> GetComplaintsByClientId(int clientId)
         {
-            return GetMany(c => c.ClientFK == clientId);
+            return GetMany(c => c.ClientFK == clientId).ToList();
         }
 
         // Récupérer les détails d’une réclamation d’un client
@@ -169,7 +169,7 @@ namespace HD.ApplicationCore.Services
                 throw new ArgumentException("Calim not found, or doesn't belong to this client.");
 
             if (complaint.ComplaintState != State.Processed)
-                throw new InvalidOperationException("Claim must be 'Closed' before validation.");
+                throw new InvalidOperationException("Claim must be 'Processed' before validation.");
 
             if (resolved)
             {
@@ -295,5 +295,6 @@ namespace HD.ApplicationCore.Services
         {
             return GetMany(c=>c.Client.clientName.Equals(clientName));
         }
+
     }
 }

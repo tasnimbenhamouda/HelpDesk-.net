@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace HD.ApplicationCore.Services
 {
-    public class ServiceClient : Service<Client>, IServiceClient
+    public class ServiceAgent : Service<Agent>, IServiceAgent
     {
-        public ServiceClient(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public ServiceAgent(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
         }
 
-        public string? GetClientName(int clientId)
+        public string? GetAgentName(int agentId)
         {
-            return Get(c => c.clientId == clientId).clientName;
+            return Get(a=>a.AgentId==agentId).Name;
         }
     }
 }
