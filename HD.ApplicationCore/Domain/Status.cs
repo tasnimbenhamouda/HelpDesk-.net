@@ -8,6 +8,6 @@ namespace HD.ApplicationCore.Domain
 {
     public enum Status
     {
-        Resolved, Unresolved
+       Resolved, Unresolved,Pending
     }
 }

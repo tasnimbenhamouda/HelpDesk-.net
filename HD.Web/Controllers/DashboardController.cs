@@ -1,4 +1,5 @@
-﻿using HD.ApplicationCore.Interfaces;
+﻿using HD.ApplicationCore.Domain;
+using HD.ApplicationCore.Interfaces;
 using HD.ApplicationCore.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -82,5 +83,46 @@ namespace HD.Web.Controllers
             var result = sf.GetAverageClientFeedback();
             return Ok(result);
         }
+
+        [HttpGet("get-statistics")]
+        public IActionResult GetStatistics()
+        {
+            var totalComplaints = isc.GetTotalComplaints();
+            var complaintsByAdmin = isacl.GetComplaintsCountByAdmin();
+            var averageResolutionTime = isc.GetAverageResolutionTime();
+            var averageResolutionTimeByAdmin = isacl.GetAverageResolutionTimeByAdmin();
+            var complaintsByFeature = isc.GetComplaintsCountByFeature();
+            var complaintsByType = isc.GetComplaintsCountByType();
+            var complaintsByState = isc.GetComplaintsCountByState();
+            var complaintsByStatus = isc.GetComplaintsCountByStatus();
+            var averageClientFeedback = sf.GetAverageClientFeedback();
+
+            var result = new DashboardDto
+            {
+                TotalComplaints = totalComplaints,
+                ComplaintsByAdmin = complaintsByAdmin,
+                AverageResolutionTime = averageResolutionTime,
+                AverageResolutionTimeByAdmin = averageResolutionTimeByAdmin,
+                ComplaintsByFeature = complaintsByFeature,
+                ComplaintsByType = complaintsByType,
+                ComplaintsByState = complaintsByState,
+                ComplaintsByStatus = complaintsByStatus,
+                AverageClientFeedback = averageClientFeedback
+            };
+            return Ok(result);
+        }
+    }
+
+    public class DashboardDto
+    {
+        public int TotalComplaints { get; set; }
+        public Dictionary<string, int> ComplaintsByAdmin { get; set; }
+        public double AverageResolutionTime { get; set; }
+        public Dictionary<string,double> AverageResolutionTimeByAdmin { get; set; }
+        public Dictionary<int,int> ComplaintsByFeature { get; set; }
+        public Dictionary<ComplaintType, int> ComplaintsByType { get; set; }
+        public Dictionary<State, int> ComplaintsByState { get; set; }
+        public Dictionary<Status, int> ComplaintsByStatus { get; set; }
+        public double AverageClientFeedback { get; set; }
     }
 }

@@ -38,7 +38,7 @@ namespace HD.Infrastructure
 
         public IEnumerable<TEntity> GetAll()
         {
-            return _dbSet.AsEnumerable();
+            return _dbSet.ToList(); //AsEnumerable();
         }
 
         public IEnumerable<TEntity> GetAll(string includeProperties)
@@ -54,8 +54,8 @@ namespace HD.Infrastructure
         public IEnumerable<TEntity> GetMany(Expression<Func<TEntity, bool>> condition)
         {
             if (condition != null)
-                return _dbSet.Where(condition).AsEnumerable();
-            return _dbSet.AsEnumerable();
+                return _dbSet.Where(condition).ToList(); //AsEnumerable();
+            return _dbSet.ToList(); //AsEnumerable();
 
             //IQueryable<TEntity> mydbset = _dbSet;
             //if (where != null)

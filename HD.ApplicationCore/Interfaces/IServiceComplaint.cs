@@ -49,7 +49,7 @@ namespace HD.ApplicationCore.Interfaces
         //Dashboard
         public int GetTotalComplaints();
         public double GetAverageResolutionTime();
-        public Dictionary<Feature, int> GetComplaintsCountByFeature();
+        public Dictionary<int, int> GetComplaintsCountByFeature();
         public Dictionary<ComplaintType, int> GetComplaintsCountByType();
         public Dictionary<State, int> GetComplaintsCountByState();
         public Dictionary<Status, int> GetComplaintsCountByStatus();

@@ -32,6 +32,7 @@ namespace HD.ApplicationCore.Services
                 ClientFK = clientId,
                 SubmissionDate = DateTime.Now,
                 ComplaintState = State.Pending,
+                ComplaintStatus = Status.Pending,
             };
 
             if (filePaths != null && filePaths.Any())
@@ -235,8 +236,16 @@ namespace HD.ApplicationCore.Services
 
         public IEnumerable<Complaint> GetComplaintsByAdmin(int adminId)
         {
-            return GetMany(c=>c.AgentClaimLogs.Any(f=>f.AdminFK==adminId));
-             
+                return GetMany(c =>
+            c.AgentClaimLogs
+             .OrderByDescending(l => l.AffectedDate) // ou CreatedDate
+             .FirstOrDefault().AdminFK == adminId
+            &&
+            c.AgentClaimLogs
+             .OrderByDescending(l => l.AffectedDate)
+             .FirstOrDefault().Affected == true
+        );
+
         }
 
 
@@ -328,10 +337,10 @@ namespace HD.ApplicationCore.Services
             return complaints.Average(c => (c.ProcessedDate - c.SubmissionDate).TotalHours);
         }
 
-        public Dictionary<Feature, int> GetComplaintsCountByFeature()
+        public Dictionary<int, int> GetComplaintsCountByFeature()
         {
             return GetAll()
-                    .GroupBy(c => c.Feature)
+                    .GroupBy(c => c.FeatureFK)
                     .OrderByDescending(g => g.Count()) // trier par nombre décroissant
                     .Take(5) // prendre seulement 5
                     .ToDictionary(g => g.Key, g => g.Count());
